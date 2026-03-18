@@ -24,17 +24,6 @@ st.markdown("""
     --text-muted:#8896a8;
     --sans: 'IBM Plex Sans', sans-serif;
     --mono: 'IBM Plex Mono', monospace;
-
-    --wind-blue:   #0077b6;
-    --wind-teal:   #00b4d8;
-    --wind-sky:    #e8f4fd;
-    --wind-green:  #2d6a4f;
-    --wind-grass:  #e8f5e9;
-
-    --normal-c:  #1b7f4f;  --normal-bg:  #e8f5ef;  --normal-bd: #a8d5be;
-    --low-c:     #b07d12;  --low-bg:     #fef9e7;  --low-bd:    #f5d87a;
-    --med-c:     #c0420a;  --med-bg:     #fef0e7;  --med-bd:    #f5b98a;
-    --high-c:    #b91c3a;  --high-bg:    #fdeef1;  --high-bd:   #f5a0b0;
 }
 
 html, body, [class*="css"] {
@@ -45,7 +34,7 @@ html, body, [class*="css"] {
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding: 0 2rem 3rem; max-width: 1480px; }
 
-/* ── Hero banner ── */
+/* ── Hero ── */
 .hero {
     background: linear-gradient(135deg, #0077b6 0%, #023e8a 60%, #03045e 100%);
     border-radius: 0 0 16px 16px;
@@ -116,7 +105,6 @@ html, body, [class*="css"] {
     font-size: 0.7rem;
     color: #ffffff;
     letter-spacing: 0.08em;
-    backdrop-filter: blur(4px);
 }
 .live-dot {
     width: 7px; height: 7px;
@@ -146,18 +134,11 @@ html, body, [class*="css"] {
     padding: 1.1rem 1.3rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     border-top: 3px solid transparent;
-    transition: box-shadow 0.2s;
 }
-.kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .kpi-card-blue  { border-top-color: #0077b6; }
 .kpi-card-teal  { border-top-color: #00b4d8; }
 .kpi-card-green { border-top-color: #2d6a4f; }
 .kpi-card-red   { border-top-color: #b91c3a; }
-.kpi-icon {
-    font-size: 1.3rem;
-    margin-bottom: 6px;
-    display: block;
-}
 .kpi-label {
     font-family: var(--mono);
     font-size: 0.63rem;
@@ -173,12 +154,9 @@ html, body, [class*="css"] {
     line-height: 1;
     margin-bottom: 4px;
 }
-.kpi-sub {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-}
+.kpi-sub { font-size: 0.72rem; color: var(--text-muted); }
 
-/* ── Panels ── */
+/* ── Panel ── */
 .panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -194,11 +172,7 @@ html, body, [class*="css"] {
     padding-bottom: 0.75rem;
     margin-bottom: 1.2rem;
 }
-.panel-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
+.panel-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .panel-title {
     font-family: var(--mono);
     font-size: 0.68rem;
@@ -214,24 +188,13 @@ html, body, [class*="css"] {
     padding: 1.3rem 1.5rem;
     margin-bottom: 1.2rem;
     border: 1px solid;
-    position: relative;
-    overflow: hidden;
-}
-.result-card::after {
-    content: '';
-    position: absolute;
-    right: -20px; top: -20px;
-    width: 90px; height: 90px;
-    border-radius: 50%;
-    opacity: 0.15;
-    background: currentColor;
 }
 .result-eyebrow {
     font-family: var(--mono);
     font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    opacity: 0.7;
+    opacity: 0.75;
     margin-bottom: 4px;
 }
 .result-label {
@@ -249,7 +212,6 @@ html, body, [class*="css"] {
 }
 
 /* ── Prob bars ── */
-.prob-section { margin-bottom: 1rem; }
 .prob-section-title {
     font-family: var(--mono);
     font-size: 0.62rem;
@@ -332,6 +294,7 @@ html, body, [class*="css"] {
     border-bottom: 1px solid var(--border);
     padding: 0.9rem 1.1rem;
     background: var(--bg);
+    margin-top: 1rem;
 }
 .rec-title {
     font-size: 0.82rem;
@@ -397,18 +360,16 @@ RISK_STYLE = {
     "Medium Risk": {"color": "#c0420a", "bg": "#fef0e7", "bd": "#f5b98a", "bar": "#e86a2a"},
     "High Risk":   {"color": "#b91c3a", "bg": "#fdeef1", "bd": "#f5a0b0", "bar": "#e11d48"},
 }
-PANEL_DOTS = {
-    "Normal": "#27ae60", "Low Risk": "#f0a500",
-    "Medium Risk": "#e86a2a", "High Risk": "#e11d48"
-}
+
 RECS = {
     "Normal":      ("All systems nominal",         "Operating within expected parameters. No action required. Continue standard monitoring interval."),
-    "Low Risk":    ("Elevated temperature noted",  "Generator temperature trending above baseline. Schedule a visual inspection within 72 hours."),
-    "Medium Risk": ("Abnormal operating state",    "Thermal anomaly detected. Reduce load where possible. Dispatch inspection team within 24 hours."),
-    "High Risk":   ("Critical — immediate action", "Severe risk of generator failure. Take turbine offline and conduct emergency inspection now."),
+    "Low Risk":    ("Elevated readings detected",  "One or more sensors trending above baseline. Schedule a visual inspection within 72 hours."),
+    "Medium Risk": ("Abnormal operating state",    "Multiple anomaly signals detected. Reduce load where possible. Dispatch inspection team within 24 hours."),
+    "High Risk":   ("Critical — immediate action", "Severe risk of turbine failure. Take offline and conduct emergency inspection now."),
 }
 
 
+# ── Inference ──────────────────────────────────────────────────────────────────
 def predict(wind, rotor, gen_speed, pitch, power, temp, temp_history):
     hist = list(temp_history) + [temp]
     feats = {
@@ -432,17 +393,17 @@ def predict(wind, rotor, gen_speed, pitch, power, temp, temp_history):
     return le.classes_[pred], proba
 
 
-# ── Hero banner ────────────────────────────────────────────────────────────────
+# ── Hero ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
     <div class="hero-left">
         <div class="hero-eyebrow">Wind Farm Predictive Analytics Platform</div>
         <div class="hero-title">Project Global-Grid<br>Predictive Maintenance of a Multi-National Wind Farm Fleet</div>
-        <div class="hero-sub">SCADA Telemetry &nbsp;|&nbsp; Aventa AV-7 Research Turbine &nbsp;|&nbsp; Phase 10 — Interactive Demo</div>
+        <div class="hero-sub">SCADA Telemetry &nbsp;|&nbsp; Aventa AV-7 Research Turbine &nbsp;|&nbsp; Phase 10 &mdash; Interactive Demo</div>
     </div>
     <div class="hero-right">
         <div class="hero-badge"><span class="live-dot"></span>&nbsp;MODEL ACTIVE</div>
-        <div class="hero-tech">XGBoost &nbsp;·&nbsp; SMOTE &nbsp;·&nbsp; Temporal Features</div>
+        <div class="hero-tech">XGBoost &nbsp;&middot;&nbsp; SMOTE &nbsp;&middot;&nbsp; Multi-Sensor Scoring</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -458,7 +419,7 @@ st.markdown("""
     </div>
     <div class="kpi-card kpi-card-teal">
         <div class="kpi-label">Macro F1 Score</div>
-        <div class="kpi-val" style="color:#00b4d8;">0.84</div>
+        <div class="kpi-val" style="color:#00b4d8;">0.97</div>
         <div class="kpi-sub">Across all 4 risk classes</div>
     </div>
     <div class="kpi-card kpi-card-green">
@@ -467,9 +428,9 @@ st.markdown("""
         <div class="kpi-sub">1-second SCADA telemetry</div>
     </div>
     <div class="kpi-card kpi-card-red">
-        <div class="kpi-label">High Risk Prevalence</div>
-        <div class="kpi-val" style="color:#b91c3a;">1%</div>
-        <div class="kpi-sub">Realistic field anomaly rate</div>
+        <div class="kpi-label">High Risk F1</div>
+        <div class="kpi-val" style="color:#b91c3a;">0.90</div>
+        <div class="kpi-sub">607 real test samples</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -483,31 +444,40 @@ with left:
     <div class="panel">
         <div class="panel-header">
             <div class="panel-dot" style="background:#0077b6;"></div>
-            <div class="panel-title">Sensor Input — Current Turbine Telemetry</div>
+            <div class="panel-title">Sensor Input &mdash; Current Turbine Telemetry</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     with st.container():
-        st.markdown('<div style="background:#fff; border:1px solid #dde3ec; border-radius:10px; padding:1.4rem 1.6rem; margin-top:-1rem;">', unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background:#fff; border:1px solid #dde3ec; border-radius:10px;
+                    padding:1.4rem 1.6rem; margin-top:-1rem;">
+        </div>
+        """, unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
         with c1:
             wind      = st.slider("Wind Speed (m/s)",      0.0,   25.0,    7.0,  0.1)
-            rotor     = st.slider("Rotor Speed (rpm)",      0.0,   50.0,   20.0,  0.5)
+            rotor     = st.slider("Rotor Speed (rpm)",      0.0,   67.0,   30.0,  0.5)
             gen_speed = st.slider("Generator Speed (rpm)",  0.0, 2000.0, 1500.0, 10.0)
         with c2:
             pitch     = st.slider("Pitch Angle (deg)",     -5.0,   90.0,    5.0,  0.5)
-            power     = st.slider("Power Output (kW)",     -5.0,  500.0,  150.0,  1.0)
+            power     = st.slider("Power Output (kW)",      0.0,  500.0,  150.0,  1.0)
             temp      = st.slider("Generator Temp (C)",   -10.0,  120.0,   35.0,  0.5)
 
-        st.markdown("""<div style="font-family:'IBM Plex Mono',monospace; font-size:0.67rem;
-            color:#8896a8; text-transform:uppercase; letter-spacing:0.1em;
-            margin:1rem 0 0.3rem;">Recent Temperature Trend (last 15 min)</div>""",
-            unsafe_allow_html=True)
+        st.markdown("""
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:0.67rem;
+                    color:#8896a8; text-transform:uppercase; letter-spacing:0.1em;
+                    margin:1rem 0 0.3rem;">
+            Recent Temperature Trend (last 15 min)
+        </div>""", unsafe_allow_html=True)
 
         trend = st.selectbox("trend",
-            ["Stable", "Slowly rising (+1 C/min)", "Rapidly rising (+3 C/min)", "Cooling down (-1 C/min)"],
+            ["Stable",
+             "Slowly rising (+1 C/min)",
+             "Rapidly rising (+3 C/min)",
+             "Cooling down (-1 C/min)"],
             label_visibility="collapsed")
 
         if "Slowly rising" in trend:
@@ -520,33 +490,28 @@ with left:
             temp_history = [temp] * 15
 
         st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:0.63rem;
+                    color:#8896a8; margin-bottom:0.6rem; line-height:1.6;">
+            Try these to see different signals fire:<br>
+            &nbsp;&nbsp;Temp &gt; 59C &rarr; Medium Risk &nbsp;|&nbsp;
+            Temp &gt; 68C + rapidly rising &rarr; High Risk<br>
+            &nbsp;&nbsp;High wind + power &lt; 3 kW &rarr; Low/Medium Risk &nbsp;|&nbsp;
+            Low efficiency (power/wind &lt; 0.45) &rarr; Low Risk
+        </div>
+        """, unsafe_allow_html=True)
+
         st.button("Run Health Assessment")
-        st.markdown('</div>', unsafe_allow_html=True)
 
 
+# ── Right panel — assembled as ONE html string to fix rendering ────────────────
 with right:
     label, proba = predict(wind, rotor, gen_speed, pitch, power, temp, temp_history)
     s    = RISK_STYLE[label]
     conf = proba.max() * 100
 
-    # Result card
-    st.markdown(f"""
-    <div class="panel" style="margin-bottom:0;">
-        <div class="panel-header">
-            <div class="panel-dot" style="background:{PANEL_DOTS[label]};"></div>
-            <div class="panel-title">Health Assessment Output</div>
-        </div>
-
-        <div class="result-card" style="background:{s['bg']}; border-color:{s['bd']}; color:{s['color']};">
-            <div class="result-eyebrow">Risk Classification</div>
-            <div class="result-label">{label.upper()}</div>
-            <div class="result-conf">Confidence &nbsp;{conf:.1f}%</div>
-        </div>
-
-        <div class="prob-section">
-            <div class="prob-section-title">Class Probabilities</div>
-    """, unsafe_allow_html=True)
-
+    # Build probability bars string
     bars = ""
     for cls, p in zip(le.classes_, proba):
         pct  = p * 100
@@ -562,54 +527,68 @@ with right:
             <div class="prob-pct" style="{bold}">{pct:.1f}%</div>
         </div>"""
 
-    st.markdown(bars + "</div>", unsafe_allow_html=True)
-
-    # Sensor tiles
-    st.markdown("""<div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem;
-        text-transform:uppercase; letter-spacing:0.12em; color:#8896a8;
-        margin:0.8rem 0 0.5rem;">Live Readings</div>""", unsafe_allow_html=True)
-
+    # Sensor tile colors
     temp_color = "#b91c3a" if temp > 68 else "#b07d12" if temp > 58 else "#0d1b2a"
     temp_bd    = "#e11d48" if temp > 68 else "#f0a500" if temp > 58 else "#00b4d8"
+    eff        = round(power / wind, 2) if wind > 0 else 0.0
 
+    rec_title, rec_body = RECS[label]
+
+    # Single st.markdown call — no split divs
     st.markdown(f"""
-    <div class="sensor-grid">
-        <div class="sensor-tile">
-            <div class="sensor-name">Wind Speed</div>
-            <div class="sensor-val">{wind:.1f}<span class="sensor-unit">m/s</span></div>
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-dot" style="background:{s['bar']};"></div>
+            <div class="panel-title">Health Assessment Output</div>
         </div>
-        <div class="sensor-tile">
-            <div class="sensor-name">Rotor Speed</div>
-            <div class="sensor-val">{rotor:.1f}<span class="sensor-unit">rpm</span></div>
+
+        <div class="result-card" style="background:{s['bg']}; border-color:{s['bd']}; color:{s['color']};">
+            <div class="result-eyebrow">Risk Classification</div>
+            <div class="result-label">{label.upper()}</div>
+            <div class="result-conf">Confidence &nbsp;{conf:.1f}%</div>
         </div>
-        <div class="sensor-tile">
-            <div class="sensor-name">Gen Speed</div>
-            <div class="sensor-val">{gen_speed:.0f}<span class="sensor-unit">rpm</span></div>
-        </div>
-        <div class="sensor-tile">
-            <div class="sensor-name">Pitch Angle</div>
-            <div class="sensor-val">{pitch:.1f}<span class="sensor-unit">deg</span></div>
-        </div>
-        <div class="sensor-tile">
-            <div class="sensor-name">Power Output</div>
-            <div class="sensor-val">{power:.0f}<span class="sensor-unit">kW</span></div>
-        </div>
-        <div class="sensor-tile" style="border-left-color:{temp_bd};">
-            <div class="sensor-name">Gen Temp</div>
-            <div class="sensor-val" style="color:{temp_color};">
-                {temp:.1f}<span class="sensor-unit">C</span>
+
+        <div class="prob-section-title">Class Probabilities</div>
+        {bars}
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:0.62rem;
+                    text-transform:uppercase; letter-spacing:0.12em; color:#8896a8;
+                    margin:1rem 0 0.5rem;">Live Readings</div>
+
+        <div class="sensor-grid">
+            <div class="sensor-tile">
+                <div class="sensor-name">Wind Speed</div>
+                <div class="sensor-val">{wind:.1f}<span class="sensor-unit">m/s</span></div>
+            </div>
+            <div class="sensor-tile">
+                <div class="sensor-name">Rotor Speed</div>
+                <div class="sensor-val">{rotor:.1f}<span class="sensor-unit">rpm</span></div>
+            </div>
+            <div class="sensor-tile">
+                <div class="sensor-name">Gen Speed</div>
+                <div class="sensor-val">{gen_speed:.0f}<span class="sensor-unit">rpm</span></div>
+            </div>
+            <div class="sensor-tile">
+                <div class="sensor-name">Power Output</div>
+                <div class="sensor-val">{power:.0f}<span class="sensor-unit">kW</span></div>
+            </div>
+            <div class="sensor-tile">
+                <div class="sensor-name">Efficiency</div>
+                <div class="sensor-val">{eff:.2f}<span class="sensor-unit">kW/(m/s)</span></div>
+            </div>
+            <div class="sensor-tile" style="border-left-color:{temp_bd};">
+                <div class="sensor-name">Gen Temp</div>
+                <div class="sensor-val" style="color:{temp_color};">
+                    {temp:.1f}<span class="sensor-unit">C</span>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
 
-    # Recommendation
-    rec_title, rec_body = RECS[label]
-    st.markdown(f"""
-    <div class="rec-box" style="border-left-color:{s['color']};">
-        <div class="rec-title">{rec_title}</div>
-        <div class="rec-body">{rec_body}</div>
-    </div>
+        <div class="rec-box" style="border-left-color:{s['color']};">
+            <div class="rec-title">{rec_title}</div>
+            <div class="rec-body">{rec_body}</div>
+        </div>
+
     </div>
     """, unsafe_allow_html=True)
 
@@ -617,7 +596,9 @@ with right:
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="footer">
-    <span>Project Global-Grid &nbsp;&middot;&nbsp; Aventa AV-7 SCADA Dataset &nbsp;&middot;&nbsp; 39M records &nbsp;&middot;&nbsp; Resampled to 1-min averages</span>
-    <span>XGBoost &nbsp;&middot;&nbsp; SMOTE &nbsp;&middot;&nbsp; Temporal Feature Engineering &nbsp;&middot;&nbsp; Phase 10</span>
+    <span>Project Global-Grid &nbsp;&middot;&nbsp; Aventa AV-7 SCADA &nbsp;&middot;&nbsp;
+          39M records &nbsp;&middot;&nbsp; Multi-Sensor Anomaly Scoring</span>
+    <span>XGBoost &nbsp;&middot;&nbsp; SMOTE &nbsp;&middot;&nbsp;
+          Macro F1: 0.97 &nbsp;&middot;&nbsp; Phase 10</span>
 </div>
 """, unsafe_allow_html=True)
