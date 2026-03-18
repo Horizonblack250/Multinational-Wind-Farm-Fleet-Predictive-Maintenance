@@ -6,123 +6,165 @@ import os
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Project Polaris · Turbine Health Monitor",
-    page_icon="⚡",
+    page_title="Global-Grid · Wind Farm Health Monitor",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
-# ── Custom CSS ─────────────────────────────────────────────────────────────────
+# ── CSS ────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
 :root {
-    --bg:        #0a0e1a;
-    --surface:   #111827;
-    --card:      #1a2235;
-    --border:    #1e3a5f;
-    --accent:    #00d4ff;
-    --green:     #00e676;
-    --amber:     #ffab00;
-    --orange:    #ff6d00;
-    --red:       #ff1744;
-    --text:      #e2e8f0;
-    --muted:     #64748b;
-    --mono:      'Space Mono', monospace;
-    --sans:      'DM Sans', sans-serif;
+    --bg:           #f4f6f9;
+    --surface:      #ffffff;
+    --border:       #e2e8f0;
+    --border-dark:  #cbd5e1;
+    --text-primary: #0f172a;
+    --text-sec:     #475569;
+    --text-muted:   #94a3b8;
+    --accent:       #0052cc;
+    --accent-light: #e8f0fe;
+
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
 }
 
 html, body, [class*="css"] {
     font-family: var(--sans);
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--bg) !important;
+    color: var(--text-primary);
 }
 
-/* Hide default streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding: 2rem 3rem 3rem; max-width: 1400px; }
+.block-container { padding: 1.5rem 2.5rem 3rem; max-width: 1440px; }
 
-/* ── Header ── */
-.polaris-header {
+/* ── Top bar ── */
+.topbar {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 1.2rem;
-    margin-bottom: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.polaris-logo {
+.topbar-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+.topbar-sub {
+    font-size: 0.78rem;
+    color: var(--text-sec);
+    margin-top: 3px;
     font-family: var(--mono);
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: var(--accent);
-    text-transform: uppercase;
 }
-.polaris-logo span { color: var(--text); opacity: 0.4; }
-.polaris-sub {
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: var(--mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-.status-pill {
+.badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(0,214,255,0.08);
-    border: 1px solid rgba(0,214,255,0.25);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-family: var(--mono);
-    font-size: 0.7rem;
+    gap: 5px;
+    background: var(--accent-light);
     color: var(--accent);
-    letter-spacing: 0.08em;
-}
-.status-dot {
-    width: 7px; height: 7px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
-/* ── Section labels ── */
-.section-label {
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
     font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+.live-dot {
+    width: 6px; height: 6px;
+    background: #16a34a;
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1.8s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── KPI strip ── */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.4rem;
+}
+.kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.kpi-label {
+    font-size: 0.68rem;
+    font-family: var(--mono);
+    color: var(--text-muted);
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    border-left: 2px solid var(--accent);
-    padding-left: 10px;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+.kpi-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1;
+    font-family: var(--mono);
+}
+.kpi-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
-/* ── Risk card ── */
-.risk-card {
-    background: var(--card);
+/* ── Panel ── */
+.panel {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     height: 100%;
 }
-.risk-label-text {
+.panel-title {
+    font-size: 0.7rem;
     font-family: var(--mono);
-    font-size: 2.2rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin: 0.5rem 0;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.7rem;
+    margin-bottom: 1.2rem;
 }
-.risk-confidence {
+
+/* ── Result card ── */
+.result-card {
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+    border-width: 1px;
+    border-style: solid;
+}
+.result-class {
     font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--muted);
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+.result-conf {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    opacity: 0.7;
 }
 
 /* ── Prob bars ── */
@@ -130,113 +172,132 @@ html, body, [class*="css"] {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
 }
-.prob-label {
+.prob-lbl {
     font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    width: 110px;
+    font-size: 0.7rem;
+    color: var(--text-sec);
+    width: 100px;
     flex-shrink: 0;
 }
 .prob-track {
     flex: 1;
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-    height: 8px;
+    background: var(--border);
+    border-radius: 3px;
+    height: 7px;
     overflow: hidden;
 }
-.prob-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-}
+.prob-fill { height: 100%; border-radius: 3px; }
 .prob-pct {
     font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--text);
-    width: 40px;
+    font-size: 0.7rem;
+    color: var(--text-primary);
+    width: 38px;
     text-align: right;
     flex-shrink: 0;
 }
 
-/* ── Sensor grid ── */
+/* ── Sensor tiles ── */
 .sensor-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 1.5rem;
+    gap: 8px;
+    margin-bottom: 1rem;
 }
 .sensor-tile {
-    background: var(--surface);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
+    border-radius: 6px;
+    padding: 10px 12px;
 }
 .sensor-name {
     font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 3px;
 }
-.sensor-value {
+.sensor-val {
     font-family: var(--mono);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--accent);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 .sensor-unit {
     font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin-left: 3px;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-left: 2px;
 }
 
-/* ── Divider ── */
-.h-rule { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+/* ── Recommendation ── */
+.rec-box {
+    border-radius: 0 6px 6px 0;
+    border-left-width: 3px;
+    border-left-style: solid;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.1rem;
+    background: var(--bg);
+}
+.rec-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+.rec-body {
+    font-size: 0.76rem;
+    color: var(--text-sec);
+    line-height: 1.5;
+}
 
-/* ── Streamlit widget overrides ── */
-div[data-testid="stSlider"] > div { padding: 0; }
-.stSlider [data-baseweb="slider"] { margin-top: 0; }
+/* ── Streamlit overrides ── */
 label[data-testid="stWidgetLabel"] {
     font-family: var(--mono) !important;
-    font-size: 0.7rem !important;
-    letter-spacing: 0.1em !important;
+    font-size: 0.68rem !important;
+    color: var(--text-sec) !important;
     text-transform: uppercase !important;
-    color: var(--muted) !important;
-}
-div[data-testid="stNumberInput"] input {
-    background: var(--surface) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--text) !important;
-    font-family: var(--mono) !important;
-    border-radius: 6px !important;
+    letter-spacing: 0.08em !important;
 }
 .stButton > button {
     background: var(--accent) !important;
-    color: var(--bg) !important;
+    color: #ffffff !important;
     border: none !important;
     font-family: var(--mono) !important;
-    font-size: 0.8rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.12em !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.1em !important;
     text-transform: uppercase !important;
     border-radius: 6px !important;
-    padding: 0.6rem 2rem !important;
+    padding: 0.55rem 1.8rem !important;
     width: 100% !important;
-    transition: opacity 0.2s !important;
 }
-.stButton > button:hover { opacity: 0.85 !important; }
+.stButton > button:hover { background: #003d99 !important; }
+
+/* ── Footer ── */
+.footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# ── Load model artifacts ────────────────────────────────────────────────────────
+# ── Load artifacts ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
-    base = os.path.join(os.path.dirname(__file__), "models")
+    base    = os.path.join(os.path.dirname(__file__), "models")
     model   = joblib.load(os.path.join(base, "polaris_risk_model.pkl"))
     encoder = joblib.load(os.path.join(base, "polaris_label_encoder.pkl"))
     with open(os.path.join(base, "polaris_features.json")) as f:
@@ -245,230 +306,226 @@ def load_artifacts():
 
 model, le, FEATURES = load_artifacts()
 
-RISK_COLORS = {
-    "Normal":      "#00e676",
-    "Low Risk":    "#ffab00",
-    "Medium Risk": "#ff6d00",
-    "High Risk":   "#ff1744",
+RISK_STYLE = {
+    "Normal":      {"color": "#0a7c59", "bg": "#ecfdf5", "bd": "#a7f3d0", "bar": "#16a34a"},
+    "Low Risk":    {"color": "#b45309", "bg": "#fffbeb", "bd": "#fde68a", "bar": "#d97706"},
+    "Medium Risk": {"color": "#c2410c", "bg": "#fff7ed", "bd": "#fed7aa", "bar": "#ea580c"},
+    "High Risk":   {"color": "#be123c", "bg": "#fff1f2", "bd": "#fecdd3", "bar": "#e11d48"},
 }
-RISK_BG = {
-    "Normal":      "rgba(0,230,118,0.08)",
-    "Low Risk":    "rgba(255,171,0,0.08)",
-    "Medium Risk": "rgba(255,109,0,0.08)",
-    "High Risk":   "rgba(255,23,68,0.08)",
-}
-RISK_BORDER = {
-    "Normal":      "rgba(0,230,118,0.3)",
-    "Low Risk":    "rgba(255,171,0,0.3)",
-    "Medium Risk": "rgba(255,109,0,0.3)",
-    "High Risk":   "rgba(255,23,68,0.3)",
+
+RECOMMENDATIONS = {
+    "Normal":      ("All systems nominal",         "Operating within expected parameters. No action required. Continue standard monitoring interval."),
+    "Low Risk":    ("Elevated temperature noted",  "Generator temperature trending above baseline. Schedule a visual inspection within 72 hours."),
+    "Medium Risk": ("Abnormal operating state",    "Thermal anomaly detected. Reduce load where possible. Dispatch inspection team within 24 hours."),
+    "High Risk":   ("Critical — immediate action", "Severe risk of generator failure. Take turbine offline and conduct emergency inspection now."),
 }
 
 
-# ── Inference helper ────────────────────────────────────────────────────────────
-def predict(wind, rotor, gen_speed, pitch, power, temp, temp_history=None):
-    if temp_history is None:
-        temp_history = [temp] * 15
-
+# ── Inference ──────────────────────────────────────────────────────────────────
+def predict(wind, rotor, gen_speed, pitch, power, temp, temp_history):
     hist = list(temp_history) + [temp]
     feats = {
-        "WindSpeed":            wind,
-        "RotorSpeed":           rotor,
-        "GeneratorSpeed":       gen_speed,
-        "PitchDeg":             pitch,
-        "PowerOutput":          power,
-        "temp_roll_mean_10":    np.mean(hist[-10:]),
-        "temp_roll_std_10":     np.std(hist[-10:]),
-        "temp_roll_max_30":     max(hist),
-        "temp_rate_of_change":  hist[-1] - hist[-2],
-        "temp_lag_5":           hist[-6] if len(hist) >= 6  else hist[0],
-        "temp_lag_15":          hist[-15] if len(hist) >= 15 else hist[0],
-        "wind_x_temp":          wind * temp,
-        "efficiency":           power / wind if wind > 0 else 0,
+        "WindSpeed":           wind,
+        "RotorSpeed":          rotor,
+        "GeneratorSpeed":      gen_speed,
+        "PitchDeg":            pitch,
+        "PowerOutput":         power,
+        "temp_roll_mean_10":   np.mean(hist[-10:]),
+        "temp_roll_std_10":    np.std(hist[-10:]),
+        "temp_roll_max_30":    max(hist),
+        "temp_rate_of_change": hist[-1] - hist[-2],
+        "temp_lag_5":          hist[-6]  if len(hist) >= 6  else hist[0],
+        "temp_lag_15":         hist[-15] if len(hist) >= 15 else hist[0],
+        "wind_x_temp":         wind * temp,
+        "efficiency":          power / wind if wind > 0 else 0,
     }
-    X = np.array([[feats[f] for f in FEATURES]])
+    X     = np.array([[feats[f] for f in FEATURES]])
     pred  = model.predict(X)[0]
     proba = model.predict_proba(X)[0]
     return le.classes_[pred], proba
 
 
-# ── Header ─────────────────────────────────────────────────────────────────────
+# ── Top bar ────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="polaris-header">
+<div class="topbar">
     <div>
-        <div class="polaris-logo">Project <span>·</span> Polaris</div>
-        <div class="polaris-sub">SCADA-Driven Predictive Maintenance · Wind Turbine Health Monitor</div>
+        <div class="topbar-title">Project Global-Grid &nbsp;&middot;&nbsp; Predictive Maintenance of a Multi-National Wind Farm Fleet</div>
+        <div class="topbar-sub">SCADA Telemetry Analytics &nbsp;|&nbsp; Aventa AV-7 Research Turbine &nbsp;|&nbsp; XGBoost Classifier &nbsp;|&nbsp; Macro F1: 0.84</div>
     </div>
-    <div class="status-pill">
-        <div class="status-dot"></div>
-        MODEL ONLINE
+    <div class="badge"><span class="live-dot"></span>&nbsp;MODEL ACTIVE</div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ── KPI strip ──────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="kpi-strip">
+    <div class="kpi-card">
+        <div class="kpi-label">Weighted Accuracy</div>
+        <div class="kpi-value" style="color:#0052cc;">99%</div>
+        <div class="kpi-sub">Weighted F1 on test set</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Macro F1 Score</div>
+        <div class="kpi-value" style="color:#0052cc;">0.84</div>
+        <div class="kpi-sub">Across all 4 risk classes</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Raw Training Records</div>
+        <div class="kpi-value">39M</div>
+        <div class="kpi-sub">1-second SCADA telemetry</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">High Risk Prevalence</div>
+        <div class="kpi-value" style="color:#be123c;">1%</div>
+        <div class="kpi-sub">Realistic anomaly rate</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ── Layout ──────────────────────────────────────────────────────────────────────
-left, right = st.columns([1.1, 1], gap="large")
+# ── Main layout ────────────────────────────────────────────────────────────────
+left, right = st.columns([1.05, 1], gap="large")
 
 with left:
-    st.markdown('<div class="section-label">Sensor Inputs</div>', unsafe_allow_html=True)
-    st.caption("Enter current turbine telemetry readings to predict maintenance risk.")
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="panel-title">Sensor Input — Current Turbine Telemetry</div>', unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     with c1:
-        wind      = st.slider("Wind Speed (m/s)",        0.0, 25.0, 7.0,  0.1)
-        rotor     = st.slider("Rotor Speed (rpm)",        0.0, 50.0, 20.0, 0.5)
-        gen_speed = st.slider("Generator Speed (rpm)",    0.0, 2000.0, 1500.0, 10.0)
+        wind      = st.slider("Wind Speed (m/s)",      0.0,   25.0,    7.0,  0.1)
+        rotor     = st.slider("Rotor Speed (rpm)",      0.0,   50.0,   20.0,  0.5)
+        gen_speed = st.slider("Generator Speed (rpm)",  0.0, 2000.0, 1500.0, 10.0)
     with c2:
-        pitch     = st.slider("Pitch Angle (°)",         -5.0, 90.0, 5.0,  0.5)
-        power     = st.slider("Power Output (kW)",       -5.0, 500.0, 150.0, 1.0)
-        temp      = st.slider("Generator Temp (°C)",     -10.0, 120.0, 35.0, 0.5)
+        pitch     = st.slider("Pitch Angle (deg)",     -5.0,   90.0,    5.0,  0.5)
+        power     = st.slider("Power Output (kW)",     -5.0,  500.0,  150.0,  1.0)
+        temp      = st.slider("Generator Temp (C)",   -10.0,  120.0,   35.0,  0.5)
 
-    st.markdown('<div class="h-rule"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-label">Temperature History (last 15 min)</div>', unsafe_allow_html=True)
-    st.caption("Optionally describe the recent temperature trend to improve prediction accuracy.")
+    st.markdown("""
+    <div style="margin-top:1rem; margin-bottom:0.3rem; font-family:var(--mono);
+                font-size:0.68rem; color:var(--text-muted); text-transform:uppercase;
+                letter-spacing:0.1em;">
+        Recent Temperature Trend (last 15 min)
+    </div>""", unsafe_allow_html=True)
 
     trend = st.selectbox(
-        "Recent temperature trend",
-        ["Stable (same as current)", "Slowly rising (+1°C/min)", "Rapidly rising (+3°C/min)", "Cooling down (-1°C/min)"],
+        "trend",
+        ["Stable", "Slowly rising  (+1 C/min)", "Rapidly rising  (+3 C/min)", "Cooling down  (-1 C/min)"],
         label_visibility="collapsed"
     )
 
-    if trend == "Slowly rising (+1°C/min)":
-        temp_history = [max(-10, temp - (15 - i)) for i in range(15)]
-    elif trend == "Rapidly rising (+3°C/min)":
-        temp_history = [max(-10, temp - 3*(15 - i)) for i in range(15)]
-    elif trend == "Cooling down (-1°C/min)":
-        temp_history = [min(120, temp + (15 - i)) for i in range(15)]
+    if "Slowly rising" in trend:
+        temp_history = [max(-10, temp - (15 - i) * 1.0) for i in range(15)]
+    elif "Rapidly rising" in trend:
+        temp_history = [max(-10, temp - (15 - i) * 3.0) for i in range(15)]
+    elif "Cooling" in trend:
+        temp_history = [min(120, temp + (15 - i) * 1.0) for i in range(15)]
     else:
         temp_history = [temp] * 15
 
     st.markdown("<br>", unsafe_allow_html=True)
-    run = st.button("⚡  RUN HEALTH ASSESSMENT")
+    st.button("Run Health Assessment")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
-# ── Results ─────────────────────────────────────────────────────────────────────
 with right:
-    st.markdown('<div class="section-label">Health Assessment</div>', unsafe_allow_html=True)
+    label, proba = predict(wind, rotor, gen_speed, pitch, power, temp, temp_history)
+    s    = RISK_STYLE[label]
+    conf = proba.max() * 100
 
-    if run or True:  # show default on load
-        label, proba = predict(wind, rotor, gen_speed, pitch, power, temp, temp_history)
-        color  = RISK_COLORS[label]
-        bg     = RISK_BG[label]
-        border = RISK_BORDER[label]
-        conf   = proba.max() * 100
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="panel-title">Health Assessment Output</div>', unsafe_allow_html=True)
 
-        # ── Risk badge ──
-        st.markdown(f"""
-        <div style="background:{bg}; border:1px solid {border}; border-radius:12px; padding:1.8rem 2rem; margin-bottom:1.2rem;">
-            <div style="font-family:'Space Mono',monospace; font-size:0.65rem; letter-spacing:0.18em;
-                        text-transform:uppercase; color:{color}; opacity:0.8; margin-bottom:6px;">
-                Risk Classification
+    # Risk result badge
+    st.markdown(f"""
+    <div class="result-card" style="background:{s['bg']}; border-color:{s['bd']};">
+        <div style="font-family:var(--mono); font-size:0.65rem; text-transform:uppercase;
+                    letter-spacing:0.12em; color:{s['color']}; opacity:0.8; margin-bottom:5px;">
+            Risk Classification
+        </div>
+        <div class="result-class" style="color:{s['color']};">{label.upper()}</div>
+        <div class="result-conf" style="color:{s['color']};">Confidence &nbsp;{conf:.1f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Probability bars
+    st.markdown("""
+    <div style="font-family:var(--mono); font-size:0.65rem; text-transform:uppercase;
+                letter-spacing:0.1em; color:var(--text-muted); margin-bottom:8px;">
+        Class Probabilities
+    </div>""", unsafe_allow_html=True)
+
+    bars_html = ""
+    for cls, p in zip(le.classes_, proba):
+        pct  = p * 100
+        w    = max(pct, 0.4)
+        clr  = RISK_STYLE[cls]["bar"]
+        bold = f"font-weight:600; color:{RISK_STYLE[cls]['color']};" if cls == label else ""
+        bars_html += f"""
+        <div class="prob-row">
+            <div class="prob-lbl" style="{bold}">{cls}</div>
+            <div class="prob-track">
+                <div class="prob-fill" style="width:{w}%; background:{clr};"></div>
             </div>
-            <div style="font-family:'Space Mono',monospace; font-size:2.4rem; font-weight:700;
-                        color:{color}; letter-spacing:0.04em; line-height:1.1;">
-                {label.upper()}
-            </div>
-            <div style="font-family:'Space Mono',monospace; font-size:0.78rem; color:#64748b; margin-top:8px;">
-                Confidence: {conf:.1f}%
+            <div class="prob-pct" style="{bold}">{pct:.1f}%</div>
+        </div>"""
+    st.markdown(bars_html, unsafe_allow_html=True)
+
+    # Sensor tiles
+    st.markdown("""
+    <div style="font-family:var(--mono); font-size:0.65rem; text-transform:uppercase;
+                letter-spacing:0.1em; color:var(--text-muted); margin:1rem 0 0.5rem;">
+        Live Readings
+    </div>""", unsafe_allow_html=True)
+
+    temp_color = "#be123c" if temp > 68 else "#b45309" if temp > 58 else "#0f172a"
+    st.markdown(f"""
+    <div class="sensor-grid">
+        <div class="sensor-tile">
+            <div class="sensor-name">Wind Speed</div>
+            <div class="sensor-val">{wind:.1f}<span class="sensor-unit">m/s</span></div>
+        </div>
+        <div class="sensor-tile">
+            <div class="sensor-name">Rotor Speed</div>
+            <div class="sensor-val">{rotor:.1f}<span class="sensor-unit">rpm</span></div>
+        </div>
+        <div class="sensor-tile">
+            <div class="sensor-name">Gen Speed</div>
+            <div class="sensor-val">{gen_speed:.0f}<span class="sensor-unit">rpm</span></div>
+        </div>
+        <div class="sensor-tile">
+            <div class="sensor-name">Pitch Angle</div>
+            <div class="sensor-val">{pitch:.1f}<span class="sensor-unit">deg</span></div>
+        </div>
+        <div class="sensor-tile">
+            <div class="sensor-name">Power Output</div>
+            <div class="sensor-val">{power:.0f}<span class="sensor-unit">kW</span></div>
+        </div>
+        <div class="sensor-tile">
+            <div class="sensor-name">Gen Temp</div>
+            <div class="sensor-val" style="color:{temp_color};">
+                {temp:.1f}<span class="sensor-unit">C</span>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-        # ── Probability bars ──
-        st.markdown('<div class="section-label" style="margin-top:1.2rem;">Class Probabilities</div>', unsafe_allow_html=True)
+    # Recommendation
+    rec_title, rec_body = RECOMMENDATIONS[label]
+    st.markdown(f"""
+    <div class="rec-box" style="border-left-color:{s['color']};">
+        <div class="rec-title">{rec_title}</div>
+        <div class="rec-body">{rec_body}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        bar_colors = {
-            "Normal":      "#00e676",
-            "Low Risk":    "#ffab00",
-            "Medium Risk": "#ff6d00",
-            "High Risk":   "#ff1744",
-        }
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        prob_html = ""
-        for cls, p in zip(le.classes_, proba):
-            pct = p * 100
-            w   = max(pct, 0.5)
-            c   = bar_colors[cls]
-            bold = "font-weight:700; color:#e2e8f0;" if cls == label else ""
-            prob_html += f"""
-            <div class="prob-row">
-                <div class="prob-label" style="{bold}">{cls}</div>
-                <div class="prob-track">
-                    <div class="prob-fill" style="width:{w}%; background:{c};"></div>
-                </div>
-                <div class="prob-pct" style="{bold}">{pct:.1f}%</div>
-            </div>"""
 
-        st.markdown(prob_html, unsafe_allow_html=True)
-
-        # ── Live sensor summary ──
-        st.markdown('<div class="h-rule"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-label">Current Readings</div>', unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div class="sensor-grid">
-            <div class="sensor-tile">
-                <div class="sensor-name">Wind Speed</div>
-                <div class="sensor-value">{wind:.1f}<span class="sensor-unit">m/s</span></div>
-            </div>
-            <div class="sensor-tile">
-                <div class="sensor-name">Rotor Speed</div>
-                <div class="sensor-value">{rotor:.1f}<span class="sensor-unit">rpm</span></div>
-            </div>
-            <div class="sensor-tile">
-                <div class="sensor-name">Gen Speed</div>
-                <div class="sensor-value">{gen_speed:.0f}<span class="sensor-unit">rpm</span></div>
-            </div>
-            <div class="sensor-tile">
-                <div class="sensor-name">Pitch Angle</div>
-                <div class="sensor-value">{pitch:.1f}<span class="sensor-unit">°</span></div>
-            </div>
-            <div class="sensor-tile">
-                <div class="sensor-name">Power Output</div>
-                <div class="sensor-value">{power:.0f}<span class="sensor-unit">kW</span></div>
-            </div>
-            <div class="sensor-tile">
-                <div class="sensor-name">Gen Temp</div>
-                <div class="sensor-value" style="color:{'#ff1744' if temp > 68 else '#ffab00' if temp > 58 else '#00d4ff'}">
-                    {temp:.1f}<span class="sensor-unit">°C</span>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # ── Recommendation ──
-        recs = {
-            "Normal":      ("All systems nominal.", "No action required. Continue standard monitoring schedule."),
-            "Low Risk":    ("Elevated temperature detected.", "Monitor generator temperature closely. Schedule inspection within 72 hours."),
-            "Medium Risk": ("Abnormal operating conditions.", "Reduce load if possible. Inspect generator cooling system within 24 hours."),
-            "High Risk":   ("Critical risk detected.", "Immediate inspection required. Consider taking turbine offline to prevent damage."),
-        }
-        title, body = recs[label]
-        st.markdown(f"""
-        <div style="background:rgba(255,255,255,0.03); border:1px solid {border};
-                    border-left: 3px solid {color}; border-radius:0 8px 8px 0;
-                    padding: 1rem 1.2rem; margin-top:0.8rem;">
-            <div style="font-family:'Space Mono',monospace; font-size:0.72rem; color:{color};
-                        letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px;">
-                Recommendation
-            </div>
-            <div style="font-size:0.88rem; font-weight:600; color:#e2e8f0; margin-bottom:4px;">{title}</div>
-            <div style="font-size:0.82rem; color:#94a3b8;">{body}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ── Footer ──────────────────────────────────────────────────────────────────────
-st.markdown("<br>", unsafe_allow_html=True)
+# ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div style="border-top:1px solid #1e3a5f; padding-top:1rem; display:flex;
-            justify-content:space-between; align-items:center;">
-    <div style="font-family:'Space Mono',monospace; font-size:0.65rem;
-                color:#334155; letter-spacing:0.1em;">
-        PROJECT POLARIS · AVENTA AV-7 SCADA · XGBOOST CLASSIFIER · MACRO F1: 0.84
-    </div>
-    <div style="font-family:'Space Mono',monospace; font-size:0.65rem; color:#334155;">
-        PHASE 10 — INTERACTIVE DEMO
-    </div>
+<div class="footer">
+    <span>Project Global-Grid &nbsp;&middot;&nbsp; Aventa AV-7 SCADA &nbsp;&middot;&nbsp; 39M records resampled to 1-min &nbsp;&middot;&nbsp; Phase 10 — Interactive Demo</span>
+    <span>XGBoost &nbsp;&middot;&nbsp; SMOTE &nbsp;&middot;&nbsp; Temporal Feature Engineering</span>
 </div>
 """, unsafe_allow_html=True)
