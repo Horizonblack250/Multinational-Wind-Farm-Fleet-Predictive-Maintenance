@@ -4,6 +4,7 @@ import joblib
 import json
 import os
 import pandas as pd
+import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="Global-Grid · Wind Farm Health Monitor",
@@ -79,10 +80,10 @@ label[data-testid="stWidgetLabel"] {
 """, unsafe_allow_html=True)
 
 
-# ── Load artifacts (no tensorflow) ────────────────────────────────────────────
+# ── Load artifacts ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
-    base      = os.path.join(os.path.dirname(__file__), "models")
+    base       = os.path.join(os.path.dirname(__file__), "models")
     classifier = joblib.load(os.path.join(base, "polaris_risk_model.pkl"))
     encoder    = joblib.load(os.path.join(base, "polaris_label_encoder.pkl"))
     with open(os.path.join(base, "polaris_features.json"))  as f: features = json.load(f)
@@ -106,8 +107,15 @@ RECS = {
 MONO = "font-family:'IBM Plex Mono',monospace;"
 SANS = "font-family:'IBM Plex Sans',sans-serif;"
 
+SCENARIO_CONTEXT = {
+    "normal":  "Turbine running under light load in mild conditions. Generator temperature is low and stable — typical overnight or low-wind operation.",
+    "warming": "Generator temperature is climbing steadily. This pattern often precedes a maintenance alert if the trend continues for another 30–60 minutes.",
+    "high":    "Sustained operation at high temperature. The turbine has been running hot for over an hour. LSTM forecasts whether it will plateau or keep rising.",
+    "cooling": "Temperature is falling — consistent with a load reduction or wind drop. Forecast confirms whether cooldown is proceeding normally.",
+}
 
-# ── Classifier inference ───────────────────────────────────────────────────────
+
+# ── Classifier ─────────────────────────────────────────────────────────────────
 def classify(wind, rotor, gen_speed, pitch, power, temp, temp_history):
     hist = list(temp_history) + [temp]
     feats = {
@@ -129,6 +137,128 @@ def classify(wind, rotor, gen_speed, pitch, power, temp, temp_history):
     pred  = model.predict(X)[0]
     proba = model.predict_proba(X)[0]
     return le.classes_[pred], proba
+
+
+# ── Plotly forecast chart builder ──────────────────────────────────────────────
+def build_forecast_chart(history_vals, forecast_vals):
+    hist_x = list(range(-len(history_vals), 0))
+    fc_x   = list(range(0, len(forecast_vals)))
+
+    # Connect the gap: last historical point bridges into forecast
+    bridge_x    = [hist_x[-1], fc_x[0]]
+    bridge_vals = [history_vals[-1], forecast_vals[0]]
+
+    all_vals   = history_vals + forecast_vals
+    y_min      = min(all_vals) - 5
+    y_max      = max(all_vals) + 8
+
+    fig = go.Figure()
+
+    # Historical line
+    fig.add_trace(go.Scatter(
+        x=hist_x, y=history_vals,
+        mode='lines',
+        name='Historical',
+        line=dict(color='#0077b6', width=2.5),
+        hovertemplate='Minute %{x}<br>Temp: %{y:.1f}°C<extra></extra>'
+    ))
+
+    # Bridge connector (dashed, subtle)
+    fig.add_trace(go.Scatter(
+        x=bridge_x, y=bridge_vals,
+        mode='lines',
+        name='',
+        line=dict(color='#94a3b8', width=1.5, dash='dot'),
+        showlegend=False,
+        hoverinfo='skip'
+    ))
+
+    # Forecast line
+    fig.add_trace(go.Scatter(
+        x=fc_x, y=forecast_vals,
+        mode='lines',
+        name='LSTM Forecast',
+        line=dict(color='#e11d48', width=2.5, dash='dash'),
+        hovertemplate='Minute +%{x}<br>Forecast: %{y:.1f}°C<extra></extra>'
+    ))
+
+    # Forecast uncertainty band (±2°C visual band)
+    upper = [v + 2.0 for v in forecast_vals]
+    lower = [v - 2.0 for v in forecast_vals]
+    fig.add_trace(go.Scatter(
+        x=fc_x + fc_x[::-1],
+        y=upper + lower[::-1],
+        fill='toself',
+        fillcolor='rgba(225,29,72,0.08)',
+        line=dict(color='rgba(255,255,255,0)'),
+        showlegend=False,
+        hoverinfo='skip',
+        name='Uncertainty band'
+    ))
+
+    # Medium Risk threshold line at 58°C
+    if y_max > 50:
+        fig.add_hline(
+            y=58,
+            line_dash="dash",
+            line_color="#e86a2a",
+            line_width=1.5,
+            annotation_text="Medium Risk threshold (58°C)",
+            annotation_position="top right",
+            annotation_font=dict(size=11, color="#e86a2a"),
+        )
+
+    # High Risk threshold line at 68°C
+    if y_max > 60:
+        fig.add_hline(
+            y=68,
+            line_dash="dash",
+            line_color="#b91c3a",
+            line_width=1.5,
+            annotation_text="High Risk threshold (68°C)",
+            annotation_position="top right",
+            annotation_font=dict(size=11, color="#b91c3a"),
+        )
+
+    # "Now" vertical line at x=0
+    fig.add_vline(
+        x=0,
+        line_dash="solid",
+        line_color="#334155",
+        line_width=1.5,
+        annotation_text="Now — forecast begins",
+        annotation_position="top",
+        annotation_font=dict(size=11, color="#334155"),
+    )
+
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='#f8fafc',
+        height=360,
+        margin=dict(l=10, r=10, t=30, b=40),
+        font=dict(family='IBM Plex Mono, monospace', size=11, color='#4a5568'),
+        xaxis=dict(
+            title='Minutes (negative = history, positive = forecast)',
+            gridcolor='#e2e8f0',
+            zeroline=False,
+            tickfont=dict(size=10),
+        ),
+        yaxis=dict(
+            title='Generator Temperature (°C)',
+            gridcolor='#e2e8f0',
+            range=[y_min, y_max],
+            tickfont=dict(size=10),
+        ),
+        legend=dict(
+            orientation='h',
+            yanchor='bottom', y=1.02,
+            xanchor='left', x=0,
+            font=dict(size=11),
+        ),
+        hovermode='x unified',
+    )
+
+    return fig
 
 
 # ── Hero ───────────────────────────────────────────────────────────────────────
@@ -170,11 +300,11 @@ st.markdown("""
 
 # ── Fleet KPIs ─────────────────────────────────────────────────────────────────
 k1, k2, k3, k4, k5 = st.columns(5)
-k1.metric("Classifier Macro F1",  "0.97",          help="Across all 4 risk classes")
-k2.metric("LSTM Forecast Horizon","30 min",         help="Temperature trajectory prediction")
-k3.metric("Avg Generator Temp",   f"{fs['overall_avg_temp']}°C",    help="Fleet average over full period")
-k4.metric("Peak Temp Recorded",   f"{fs['peak_temp_recorded']}°C",  help="Historical maximum")
-k5.metric("High Risk Rate",       f"{fs['high_risk_pct']:.1f}%",    help="Of all operational minutes")
+k1.metric("Classifier Macro F1",   "0.97",         help="Across all 4 risk classes")
+k2.metric("LSTM Forecast Horizon", "30 min",        help="Temperature trajectory prediction")
+k3.metric("Avg Generator Temp",    f"{fs['overall_avg_temp']}°C",   help="Fleet average over full period")
+k4.metric("Peak Temp Recorded",    f"{fs['peak_temp_recorded']}°C", help="Historical maximum")
+k5.metric("High Risk Rate",        f"{fs['high_risk_pct']:.1f}%",   help="Of all operational minutes")
 
 st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 
@@ -324,7 +454,7 @@ with tab1:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — LSTM Temperature Forecast (pre-computed, no TF dependency)
+# TAB 2 — LSTM Temperature Forecast
 # ══════════════════════════════════════════════════════════════════════════════
 with tab2:
     st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
@@ -332,13 +462,22 @@ with tab2:
     st.markdown(f"""
     <div style="{MONO} font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em;
                 color:#4a5568; font-weight:600; border-bottom:2px solid #0077b6;
-                padding-bottom:0.5rem; margin-bottom:0.3rem;">
+                padding-bottom:0.5rem; margin-bottom:1rem;">
         30-Minute Temperature Forecast — LSTM Model
-    </div>
-    <div style="{SANS} font-size:0.82rem; color:#4a5568; margin-bottom:1.2rem; line-height:1.6;">
-        The LSTM was trained on 712,000 minutes of SCADA telemetry to learn generator temperature
-        dynamics. Select an operational scenario to see how the model forecasts temperature
-        trajectory over the next 30 minutes based on the preceding 60-minute history.
+    </div>""", unsafe_allow_html=True)
+
+    # Plain English explainer
+    st.markdown(f"""
+    <div style="{SANS} font-size:0.84rem; color:#4a5568; background:#f8fafc;
+                border:1px solid #dde3ec; border-radius:8px; padding:0.9rem 1.1rem;
+                margin-bottom:1.2rem; line-height:1.7;">
+        <strong style="color:#0d1b2a;">How to read this chart:</strong>
+        The <span style="color:#0077b6; font-weight:600;">blue line</span> shows the
+        generator temperature over the last 60 minutes of real SCADA data.
+        The <span style="color:#e11d48; font-weight:600;">red dashed line</span> is what
+        the LSTM model predicts will happen over the next 30 minutes.
+        The shaded red area is the uncertainty band (&plusmn;2&deg;C).
+        Dashed horizontal lines mark the thresholds at which maintenance alerts trigger.
     </div>""", unsafe_allow_html=True)
 
     seqs = deg_data['representative_sequences']
@@ -357,57 +496,55 @@ with tab2:
     last_temp     = history_vals[-1]
     max_fc        = max(forecast_vals)
     min_fc        = min(forecast_vals)
-    trend_dir     = "RISING" if forecast_vals[-1] > forecast_vals[0] + 0.5 \
-                    else "FALLING" if forecast_vals[-1] < forecast_vals[0] - 0.5 \
-                    else "STABLE"
+    trend_dir     = (
+        "RISING"  if forecast_vals[-1] > forecast_vals[0] + 0.5 else
+        "FALLING" if forecast_vals[-1] < forecast_vals[0] - 0.5 else
+        "STABLE"
+    )
+
+    # Scenario context card
+    st.markdown(f"""
+    <div style="background:#e8f0fe; border:1px solid #bfdbfe; border-radius:8px;
+                padding:0.8rem 1.1rem; margin-bottom:1rem;">
+        <div style="{MONO} font-size:0.6rem; text-transform:uppercase; letter-spacing:0.12em;
+                    color:#1e40af; margin-bottom:3px;">Scenario context</div>
+        <div style="{SANS} font-size:0.82rem; color:#1e3a8a;">
+            {SCENARIO_CONTEXT[key]}
+        </div>
+    </div>""", unsafe_allow_html=True)
 
     # Forecast KPIs
     fc1, fc2, fc3, fc4 = st.columns(4)
-    fc1.metric("Current Temp",   f"{last_temp:.1f}°C")
-    fc2.metric("Forecast Peak",  f"{max_fc:.1f}°C")
-    fc3.metric("Forecast Low",   f"{min_fc:.1f}°C")
-    fc4.metric("30-min Trend",   trend_dir)
+    fc1.metric("Current Temp",  f"{last_temp:.1f}°C")
+    fc2.metric("Forecast Peak", f"{max_fc:.1f}°C")
+    fc3.metric("Forecast Low",  f"{min_fc:.1f}°C")
+    fc4.metric("30-min Trend",  trend_dir)
 
-    st.markdown("<div style='margin-bottom:0.8rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # Build chart dataframe
-    hist_x     = list(range(-len(history_vals), 0))
-    forecast_x = list(range(0, len(forecast_vals)))
-
-    hist_df = pd.DataFrame({
-        'Minute':           hist_x,
-        'Historical (°C)':  history_vals,
-        'Forecast (°C)':    [None] * len(hist_x)
-    })
-    fc_df = pd.DataFrame({
-        'Minute':           forecast_x,
-        'Historical (°C)':  [None] * len(forecast_x),
-        'Forecast (°C)':    forecast_vals
-    })
-    chart_df = pd.concat([hist_df, fc_df], ignore_index=True).set_index('Minute')
-    st.line_chart(chart_df, color=["#0077b6", "#e11d48"], height=320)
-
-    st.markdown(f"""
-    <div style="{MONO} font-size:0.65rem; color:#8896a8; text-align:center; margin-top:0.3rem;">
-        Blue = last 60 min historical &nbsp;|&nbsp; Red = 30-min LSTM forecast
-        &nbsp;|&nbsp; Vertical axis: Generator Temperature (°C)
-    </div>""", unsafe_allow_html=True)
+    # Plotly chart
+    fig = build_forecast_chart(history_vals, forecast_vals)
+    st.plotly_chart(fig, use_container_width=True)
 
     # Alert interpretation
     alert_color = "#b91c3a" if max_fc > 68 else "#c0420a" if max_fc > 58 else "#1b7f4f"
+    alert_bg    = "#fdeef1" if max_fc > 68 else "#fef0e7" if max_fc > 58 else "#e8f5ef"
     alert_text  = (
-        "CRITICAL: Forecast exceeds High Risk threshold (68°C). Immediate inspection recommended."
+        "CRITICAL: Forecast exceeds the High Risk threshold (68°C). "
+        "Recommend immediate load reduction and unscheduled inspection."
         if max_fc > 68 else
-        "WARNING: Forecast approaches Medium Risk threshold (58°C). Monitor closely."
+        "WARNING: Forecast approaches the Medium Risk threshold (58°C). "
+        "Continue monitoring — if trend persists, schedule inspection within 24 hours."
         if max_fc > 58 else
-        "Forecast remains within normal operating range. No action required."
+        "Forecast remains within the normal operating envelope. "
+        "No maintenance action required based on this trajectory."
     )
 
     st.markdown(f"""
-    <div style="border-left:3px solid {alert_color}; border-top:1px solid #dde3ec;
-                border-right:1px solid #dde3ec; border-bottom:1px solid #dde3ec;
-                border-radius:0 8px 8px 0; padding:0.9rem 1.1rem;
-                background:#f8fafc; margin-top:0.8rem;">
+    <div style="border-left:3px solid {alert_color}; background:{alert_bg};
+                border-top:1px solid {alert_color}33; border-right:1px solid {alert_color}33;
+                border-bottom:1px solid {alert_color}33;
+                border-radius:0 8px 8px 0; padding:0.9rem 1.1rem; margin-top:0.2rem;">
         <div style="{MONO} font-size:0.62rem; text-transform:uppercase; letter-spacing:0.1em;
                     color:{alert_color}; margin-bottom:4px;">Forecast Interpretation</div>
         <div style="{SANS} font-size:0.82rem; color:#0d1b2a; font-weight:500;">{alert_text}</div>
@@ -435,12 +572,11 @@ with tab3:
     weekly = pd.DataFrame(deg_data['weekly_trends'])
     weekly['date'] = pd.to_datetime(weekly['date'])
 
-    # Summary metrics
     d1, d2, d3, d4 = st.columns(4)
-    d1.metric("Data Range",          f"{fs['date_range_start']} → {fs['date_range_end']}")
-    d2.metric("Operational Minutes",  f"{fs['total_minutes']:,}")
-    d3.metric("Avg Efficiency",       f"{fs['overall_avg_eff']:.3f} kW/ms")
-    d4.metric("High Risk Minutes",    f"{fs['high_risk_pct']:.2f}%")
+    d1.metric("Data Range",           f"{fs['date_range_start']} → {fs['date_range_end']}")
+    d2.metric("Operational Minutes",   f"{fs['total_minutes']:,}")
+    d3.metric("Avg Efficiency",        f"{fs['overall_avg_eff']:.3f} kW/ms")
+    d4.metric("High Risk Minutes",     f"{fs['high_risk_pct']:.2f}%")
 
     st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 
