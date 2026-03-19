@@ -261,7 +261,6 @@ This project followed the **Project Polaris workflow** — a structured 12-phase
 | 6 | SQL analytics queries | Complete |
 | 7 | Exploratory data analysis | Complete |
 | 8 | Predictive maintenance modelling | Complete |
-| 9 | Power BI dashboard | In progress |
 | 10 | Interactive Streamlit demo | Complete |
 | 11 | Documentation | Complete |
 | 12 | Portfolio integration | Complete |
