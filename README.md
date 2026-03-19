@@ -272,8 +272,3 @@ This project followed the **Project Polaris workflow** — a structured 12-phase
 
 Built as a portfolio project demonstrating end-to-end data analytics and machine learning engineering skills — from raw industrial sensor data to a deployed predictive maintenance system.
 
-*"The goal was not just to build a model, but to build a system — one that an energy company analyst could actually open, understand, and act on."*
-
----
-
-*Project Global-Grid — formerly Project Polaris (internal codename)*
