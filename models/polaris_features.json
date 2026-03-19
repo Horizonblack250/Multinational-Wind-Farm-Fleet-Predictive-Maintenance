@@ -1,1 +1,0 @@
-["WindSpeed", "RotorSpeed", "GeneratorSpeed", "PitchDeg", "PowerOutput", "temp_roll_mean_10", "temp_roll_std_10", "temp_roll_max_30", "temp_rate_of_change", "temp_lag_5", "temp_lag_15", "wind_x_temp", "efficiency"]
