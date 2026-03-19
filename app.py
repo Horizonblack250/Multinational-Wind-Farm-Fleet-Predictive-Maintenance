@@ -300,7 +300,7 @@ st.markdown("""
 
 # ── Fleet KPIs ─────────────────────────────────────────────────────────────────
 k1, k2, k3, k4, k5 = st.columns(5)
-k1.metric("Classifier Macro F1",   "0.97",         help="Across all 4 risk classes")
+k1.metric("Classifier Macro F1",   "0.98",         help="Across all 4 risk classes")
 k2.metric("LSTM Forecast Horizon", "30 min",        help="Temperature trajectory prediction")
 k3.metric("Avg Generator Temp",    f"{fs['overall_avg_temp']}°C",   help="Fleet average over full period")
 k4.metric("Peak Temp Recorded",    f"{fs['peak_temp_recorded']}°C", help="Historical maximum")
@@ -488,7 +488,7 @@ with tab2:
         "Cooling down (post-load reduction)":   "cooling",
     }
 
-    sel = st.selectbox("Select operational scenario", list(scenario_map.keys()), index=2)
+    sel = st.selectbox("Select operational scenario", list(scenario_map.keys()))
     key = scenario_map[sel]
 
     history_vals  = seqs[key]['history']
@@ -660,6 +660,6 @@ st.markdown(f"""
     <span>Project Global-Grid &nbsp;&middot;&nbsp; Aventa AV-7 SCADA
           &nbsp;&middot;&nbsp; 39M raw records &nbsp;&middot;&nbsp; 712K operational minutes</span>
     <span>XGBoost Classifier &nbsp;&middot;&nbsp; LSTM Forecaster
-          &nbsp;&middot;&nbsp; Macro F1: 0.97 &nbsp;&middot;&nbsp; Phase 10</span>
+          &nbsp;&middot;&nbsp; Macro F1: 0.98 &nbsp;&middot;&nbsp; Phase 10</span>
 </div>
 """, unsafe_allow_html=True)
