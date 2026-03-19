@@ -1,9 +1,5 @@
-Project Global-Grid
-Predictive Maintenance of a Multi-National Wind Farm Fleet
-Show Image
-Show Image
-Show Image
-Show Image
+# Project Global-Grid - Predictive Maintenance of a Multi-National Wind Farm Fleet
+https://multinational-wind-farm-fleet-predictive-maintenance-cey7btpcm.streamlit.app/
 
 Why This Project Exists
 Wind energy is the fastest-growing renewable energy source in the world. According to the Global Wind Energy Council, installed wind capacity has grown over 900% in the last two decades — and that growth is accelerating. By 2030, wind is projected to supply over 20% of global electricity demand.
@@ -155,6 +151,5 @@ PhaseDescriptionStatus1Problem definition & business caseComplete2Data acquisiti
 
 Author
 Built as a portfolio project demonstrating end-to-end data analytics and machine learning engineering skills — from raw industrial sensor data to a deployed predictive maintenance system.
-"The goal was not just to build a model, but to build a system — one that an energy company analyst could actually open, understand, and act on."
 
-Project Global-Grid 
+
