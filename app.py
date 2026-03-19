@@ -488,7 +488,7 @@ with tab2:
         "Cooling down (post-load reduction)":   "cooling",
     }
 
-    sel = st.selectbox("Select operational scenario", list(scenario_map.keys()))
+    sel = st.selectbox("Select operational scenario", list(scenario_map.keys()), index=2)
     key = scenario_map[sel]
 
     history_vals  = seqs[key]['history']
